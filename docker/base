@@ -1,6 +1,6 @@
 FROM appium/appium:v2.11.4-p0
 
-LABEL maintainer "Budi Utomo <budtmo.os@gmail.com>"
+LABEL maintainer "H2A <cplpearce>"
 
 USER root
 
@@ -13,18 +13,18 @@ USER root
 #   Process manager
 #================
 RUN apt-get -qqy update && apt-get -qqy install --no-install-recommends \
-    socat \
-    supervisor \
- && apt autoremove -y \
- && apt clean all \
- && rm -rf /var/lib/apt/lists/*
+  socat \
+  supervisor \
+  && apt autoremove -y \
+  && apt clean all \
+  && rm -rf /var/lib/apt/lists/*
 
 #==================
 # Configure Python
 #==================
 RUN apt-get -qqy update && \
-    apt-get -qqy --no-install-recommends install \
-    python3-pip \
+  apt-get -qqy --no-install-recommends install \
+  python3-pip \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1

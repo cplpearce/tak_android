@@ -1,10 +1,10 @@
 #!/bin/bash
 
-function is_str_in_list(){
+function is_str_in_list() {
     local given_str=${1}
     local list_str=${@:2}
 
-    if [[ ! " ${list_str[*]} " =~ " ${given_str} " ]]; then
+    if [[ ! " ${list_str[*]} " =~ ${given_str} ]]; then
         echo "${given_str} is not supported!"
         exit 1
     fi
@@ -12,22 +12,22 @@ function is_str_in_list(){
 
 tasks=("test" "build" "push")
 if [ -z "${1}" ]; then
-    read -p "Task ($(echo "${tasks[@]}" | tr ' ' '|')) : " t
+    read -rp "Task ($(echo "${tasks[@]}" | tr ' ' '|')) : " t
 else
     t=${1}
 fi
-is_str_in_list ${t} ${tasks[@]}
+is_str_in_list "${t}" "${tasks[@]}"
 
 projects=("base" "emulator")
 if [ -z "${2}" ]; then
-    read -p "Project ($(echo "${projects[@]}" | tr ' ' '|')) : " p
+    read -rp "Project ($(echo "${projects[@]}" | tr ' ' '|')) : " p
 else
     p=${2}
 fi
-is_str_in_list ${p} ${projects[@]}
+is_str_in_list "${p}" "${projects[@]}"
 
 if [ -z "${3}" ]; then
-    read -p "Release Version (v2.0.0-p0|v2.0.0-p1|etc) : " r_v
+    read -rp "Release Version (v2.0.0-p0|v2.0.0-p1|etc) : " r_v
 else
     r_v=${3}
 fi
@@ -36,16 +36,9 @@ FOLDER_PATH=""
 IMAGE_NAME=""
 TAG_NAME=""
 
-if [[ "${p}" == "pro"* ]]; then
-    IFS='-' read -ra arr <<<"${p}"
-    FOLDER_PATH+="docker/${arr[0]}/${arr[1]}"
-    IMAGE_NAME+="budtmo2/docker-android-${arr[0]}"
-    TAG_NAME+="${arr[1]}"
-else
-    FOLDER_PATH+="docker/${p}"
-    IMAGE_NAME+="budtmo/docker-android"
-    TAG_NAME+="${p}"
-fi
+FOLDER_PATH+="docker/${p}"
+IMAGE_NAME+="budtmo/docker-android"
+TAG_NAME+="${p}"
 
 if [[ "${p}" == *"emulator"* ]]; then
     supported_android_version=("9.0" "10.0" "11.0" "12.0" "13.0" "14.0")
@@ -64,12 +57,12 @@ if [[ "${p}" == *"emulator"* ]]; then
     last_key=${keys[-2]} # because 9.0 will be last
 
     if [ -z "${4}" ]; then
-        read -p "Android Version ($(echo "${supported_android_version[@]}" \
-            | tr ' ' '|')) : " a_v
+        read -rp "Android Version ($(echo "${supported_android_version[@]}" |
+            tr ' ' '|')) : " a_v
     else
         a_v=${4}
     fi
-    is_str_in_list ${a_v} ${supported_android_version[@]}
+    is_str_in_list "${a_v}" "${supported_android_version[@]}"
     a_l=${api_levels[${a_v}]}
     TAG_NAME+="_${a_v}"
 fi
@@ -88,11 +81,11 @@ function build() {
 
     cmd+="-f ${FOLDER_PATH} ."
     ${cmd}
-    docker tag ${IMAGE_NAME_SPECIFIC_RELEASE} ${IMAGE_NAME_LATEST}
+    docker tag "${IMAGE_NAME_SPECIFIC_RELEASE}" "${IMAGE_NAME_LATEST}"
 
     if [ -n "${a_v}" ] && [ "${a_v}" = "${last_key}" ]; then
         echo "${a_v} is the last version in the list, will use it as default image tag"
-        docker tag ${IMAGE_NAME_SPECIFIC_RELEASE} ${IMAGE_NAME}:latest
+        docker tag "${IMAGE_NAME_SPECIFIC_RELEASE}" "${IMAGE_NAME}:latest"
     fi
 }
 
@@ -104,8 +97,8 @@ function test() {
     mkdir -p tmp
     build
     docker run -it --rm --name test --entrypoint /bin/bash \
-    -v $PWD/${tmp_folder}:${cli_path}/${tmp_folder} ${IMAGE_NAME_SPECIFIC_RELEASE} \
-    -c "cd ${cli_path} && sudo rm -rf ${tmp_folder}/* && \
+        -v "$PWD/${tmp_folder}":"${cli_path}/${tmp_folder}" "${IMAGE_NAME_SPECIFIC_RELEASE}" \
+        -c "cd ${cli_path} && sudo rm -rf ${tmp_folder}/* && \
     nosetests -v && sudo mv .coverage ${tmp_folder} && \
     sudo cp -r ${results_path}/* ${tmp_folder} && sudo chown -R 1300:1301 ${tmp_folder} &&
     sudo chmod a+x -R ${tmp_folder}"
@@ -113,8 +106,8 @@ function test() {
 
 function push() {
     build
-    docker push ${IMAGE_NAME_SPECIFIC_RELEASE}
-    docker push ${IMAGE_NAME_LATEST}
+    docker push "${IMAGE_NAME_SPECIFIC_RELEASE}"
+    docker push "${IMAGE_NAME_LATEST}"
     if [ -n "${a_v}" ] && [ "${a_v}" = "${last_key}" ]; then
         docker push ${IMAGE_NAME}:latest
     fi

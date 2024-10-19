@@ -11,10 +11,10 @@ with open("requirements.txt", "r") as f:
 setup(
     name="docker-android",
     version=app_version,
-    url="https://github.com/budtmo/docker-android",
+    url="https://github.com/cplpearce/tak-android",
     description="CLI for docker-android",
-    author="Budi Utomo",
-    author_email="budtmo.os@gmail.com",
+    author="H2A",
+    author_email="clint@h2analytics.ca",
     install_requires=reqs,
     py_modules=["cli", "docker-android"],
     entry_points={"console_scripts": "docker-android=src.app:cli"}
