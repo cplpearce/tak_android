@@ -1,0 +1,21 @@
+services:
+  tak-android:
+    image: tak-android
+    container_name: tak-android-1
+    restart: always
+    network_mode: host
+    ports:
+      - "6080:6080"
+    environment:
+      - EMULATOR_DEVICE="Samsung Galaxy S10"
+      - WEB_VNC=true
+      - EMULATOR_NO_SKIN=true
+      - VNC_PASSWORD=tak
+    volumes:
+      - ./data/1:/home/androidusr
+    devices:
+      - /dev/kvm
+
+networks:
+  host-network:
+    driver: host

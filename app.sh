@@ -37,7 +37,7 @@ IMAGE_NAME=""
 TAG_NAME=""
 
 FOLDER_PATH+="docker/${p}"
-IMAGE_NAME+="budtmo/docker-android"
+IMAGE_NAME+="h2analytics/tak-android"
 TAG_NAME+="${p}"
 
 if [[ "${p}" == *"emulator"* ]]; then
