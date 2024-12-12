@@ -40,7 +40,7 @@ Docker-Android is a docker image built to be used for everything related to Andr
 3. Run Docker-Android container
 
    ```bash
-   docker run -d -p 6080:6080 -e EMULATOR_DEVICE="Samsung Galaxy S10" -e WEB_VNC=true --device /dev/kvm --name android-container h2analytics/tak-android:emulator_11.0
+   docker run -d -p 6080:6080 -e EMULATOR_DEVICE="Samsung Galaxy S10" -e WEB_VNC=true --device /dev/kvm --name android-container mighthire/tak-android:emulator_11.0
    ```
 
 4. Open <http://localhost:6080> to see inside running container.
@@ -53,7 +53,7 @@ Docker-Android is a docker image built to be used for everything related to Andr
 
 ## Persisting data
 
-The default behaviour is to destroy the emulated device on container restart. To persist data, you need to mount a volume at `/home/androidusr`: `docker run -v data:/home/androidusr budtmo/docker-android:emulator_11.0`
+The default behaviour is to destroy the emulated device on container restart. To persist data, you need to mount a volume at `/home/androidusr`: `docker run -v data:/home/androidusr`
 
 `command = /bin/bash -c 'chown -v root:kvm /dev/kvm && chmod 660 /dev/kvm'` sets `/dev/kvm` to `kvm` usergroup rather than the default `root` usergroup on WSL2 startup.
 
@@ -66,3 +66,8 @@ This [document](./documentations/CUSTOM_CONFIGURATIONS.md) contains information 
 ## Emulator Skins
 
 The Emulator skins are taken from [Android Studio IDE](https://developer.android.com/studio) and [Samsung Developer Website](https://developer.samsung.com/)
+
+## Forked From <https://github.dev/budtmo/docker-android/>
+
+- Removed a bunch of spyware
+- Removed Genymotion eugh

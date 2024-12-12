@@ -11,8 +11,6 @@ from enum import Enum
 from src.application import Application
 from src.device import DeviceType
 from src.device.emulator import Emulator
-from src.device.geny_aws import GenyAWS
-from src.device.geny_saas import GenySAAS
 from src.helper import convert_str_to_bool, get_env_value_or_raise
 from src.constants import ENV
 from src.logger import log
@@ -21,7 +19,7 @@ log.init()
 logger = logging.getLogger("App")
 
 
-def get_device(given_input: str) -> Union[Emulator, GenyAWS, GenySAAS, None]:
+def get_device(given_input: str) -> Union[Emulator, None]:
     """
     Get Device object based on given input
 
@@ -40,20 +38,25 @@ def get_device(given_input: str) -> Union[Emulator, GenyAWS, GenySAAS, None]:
         emu_data_partition = os.getenv(ENV.EMULATOR_DATA_PARTITION, "550m")
         emu_additional_args = os.getenv(ENV.EMULATOR_ADDITIONAL_ARGS, "")
 
-        emu_name = os.getenv(ENV.EMULATOR_NAME, "{d}_{v}".format(
-            d=emu_device.replace(" ", "_").lower(), v=emu_av))
-        emu = Emulator(emu_name, emu_device, emu_av, emu_data_partition,
-                       emu_additional_args, emu_img_type, emu_sys_img)
+        emu_name = os.getenv(
+            ENV.EMULATOR_NAME,
+            "{d}_{v}".format(d=emu_device.replace(" ", "_").lower(), v=emu_av),
+        )
+        emu = Emulator(
+            emu_name,
+            emu_device,
+            emu_av,
+            emu_data_partition,
+            emu_additional_args,
+            emu_img_type,
+            emu_sys_img,
+        )
         return emu
-    elif input_lower == DeviceType.GENY_AWS.value.lower():
-        return GenyAWS()
-    elif input_lower == DeviceType.GENY_SAAS.value.lower():
-        return GenySAAS()
     else:
         return None
 
 
-@click.group(context_settings=dict(help_option_names=['-h', '--help']))
+@click.group(context_settings=dict(help_option_names=["-h", "--help"]))
 def cli():
     pass
 
@@ -61,8 +64,9 @@ def cli():
 def start_appium() -> None:
     if convert_str_to_bool(os.getenv(ENV.APPIUM)):
         cmd = f"/usr/bin/appium"
-        app_appium = Application("Appium", cmd,
-                                 os.getenv(ENV.APPIUM_ADDITIONAL_ARGS, ""), False)
+        app_appium = Application(
+            "Appium", cmd, os.getenv(ENV.APPIUM_ADDITIONAL_ARGS, ""), False
+        )
         app_appium.start()
     else:
         logger.info("env APPIUM cannot be found, Appium is not started!")
@@ -82,11 +86,13 @@ def start_device() -> None:
 
 def start_display_screen() -> None:
     cmd = "/usr/bin/Xvfb"
-    args = f"{os.getenv(ENV.DISPLAY)} " \
-           f"-screen {os.getenv(ENV.SCREEN_NUMBER)} " \
-           f"{os.getenv(ENV.SCREEN_WIDTH)}x" \
-           f"{os.getenv(ENV.SCREEN_HEIGHT)}x" \
-           f"{os.getenv(ENV.SCREEN_DEPTH)}"
+    args = (
+        f"{os.getenv(ENV.DISPLAY)} "
+        f"-screen {os.getenv(ENV.SCREEN_NUMBER)} "
+        f"{os.getenv(ENV.SCREEN_WIDTH)}x"
+        f"{os.getenv(ENV.SCREEN_HEIGHT)}x"
+        f"{os.getenv(ENV.SCREEN_DEPTH)}"
+    )
     d_screen = Application("d_screen", cmd, args, False)
     d_screen.start()
 
@@ -99,9 +105,12 @@ def start_display_wm() -> None:
 
 def start_port_forwarder() -> None:
     import socket
+
     local_ip = socket.gethostbyname(socket.gethostname())
-    cmd = f"/usr/bin/socat tcp-listen:5554,bind={local_ip},fork tcp:127.0.0.1:5554 & " \
-          f"/usr/bin/socat tcp-listen:5555,bind={local_ip},fork tcp:127.0.0.1:5555"
+    cmd = (
+        f"/usr/bin/socat tcp-listen:5554,bind={local_ip},fork tcp:127.0.0.1:5554 & "
+        f"/usr/bin/socat tcp-listen:5555,bind={local_ip},fork tcp:127.0.0.1:5555"
+    )
     pf = Application("port_forwarder", cmd)
     pf.start()
 
@@ -166,7 +175,9 @@ def shared_log() -> None:
 
         log_path = get_env_value_or_raise(ENV.LOG_PATH)
         log_port = int(get_env_value_or_raise(ENV.WEB_LOG_PORT))
-        logger.info(f"Shared log is enabled! all logs can be found on port '{log_port}'")
+        logger.info(
+            f"Shared log is enabled! all logs can be found on port '{log_port}'"
+        )
 
         class LogSharedHandler(BaseHTTPRequestHandler):
             def do_GET(self):
@@ -174,7 +185,7 @@ def shared_log() -> None:
                 if self.path == "/":
                     html = "<html><body>"
                     for f in os.listdir(log_path):
-                        html += f"<p><a href=\"{f}\">{f}</a></p>"
+                        html += f'<p><a href="{f}">{f}</a></p>'
                     html += "</body></html>"
 
                     self.send_response(200)
@@ -193,14 +204,16 @@ def shared_log() -> None:
                     except FileNotFoundError:
                         self.send_error(404, "File not found")
 
-        httpd = HTTPServer(('0.0.0.0', log_port), LogSharedHandler)
+        httpd = HTTPServer(("0.0.0.0", log_port), LogSharedHandler)
         httpd.serve_forever()
     else:
         logger.info(f"Shared log is disabled! nothing to do!")
 
 
 @cli.command()
-@click.argument("component", type=click.Choice([component.value for component in SharedComponent]))
+@click.argument(
+    "component", type=click.Choice([component.value for component in SharedComponent])
+)
 def share(component):
     selected_component = str(component).lower()
     if selected_component == SharedComponent.LOG.value.lower():
@@ -209,5 +222,5 @@ def share(component):
         logger.error(f"component '{component}' is not supported!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

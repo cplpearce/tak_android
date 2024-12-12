@@ -1,21 +1,33 @@
 services:
   tak-android:
-    image: tak-android
-    container_name: tak-android-1
-    restart: always
-    network_mode: host
+    image: mighthire/tak-android:emulator_14.0_v2.0.0-p0
+    container_name: tak-android
     ports:
       - "6080:6080"
+    user: "1300:1301"
     environment:
       - EMULATOR_DEVICE="Samsung Galaxy S10"
       - WEB_VNC=true
       - EMULATOR_NO_SKIN=true
       - VNC_PASSWORD=tak
+      - APP_PATH=/home/androidusr/docker-android
+      - WORK_PATH=/home/androidusr
+      - LOG_PATH=/home/androidusr/logs
+      - ANDROID_HOME=/opt/android
+      - DISPLAY=:0
+      - SCRIPT_PATH=docker-android
+      - ANDROID_TOOL_HOME=/opt/android/cmdline-tools
+      - EMULATOR_API_LEVEL=34
+      - EMULATOR_IMG_TYPE=google_apis
+      - EMULATOR_SYS_IMG=x86_64
+      - SCREEN_WIDTH=1600
+      - SCREEN_HEIGHT=900
+      - SCREEN_DEPTH=24+32
+      - VNC_PORT=5900
+      - WEB_VNC_PORT=6080
+      - WEB_LOG_PORT=9000
+      - DEVICE_TYPE=emulator
     volumes:
-      - ./data/1:/home/androidusr
+      - /dev/shm:/dev/shm
     devices:
       - /dev/kvm
-
-networks:
-  host-network:
-    driver: host

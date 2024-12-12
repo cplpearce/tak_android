@@ -17,5 +17,5 @@ setup(
     author_email="clint@h2analytics.ca",
     install_requires=reqs,
     py_modules=["cli", "docker-android"],
-    entry_points={"console_scripts": "docker-android=src.app:cli"}
+    entry_points={"console_scripts": "docker-android=src.app:cli"},
 )

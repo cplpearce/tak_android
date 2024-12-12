@@ -1,6 +1,6 @@
 FROM appium/appium:v2.11.4-p0
 
-LABEL maintainer "H2A <cplpearce>"
+LABEL maintainer="H2A <cplpearce>"
 
 USER root
 

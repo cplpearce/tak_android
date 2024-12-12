@@ -37,7 +37,7 @@ IMAGE_NAME=""
 TAG_NAME=""
 
 FOLDER_PATH+="docker/${p}"
-IMAGE_NAME+="h2analytics/tak-android"
+IMAGE_NAME+="mighthire/tak-android"
 TAG_NAME+="${p}"
 
 if [[ "${p}" == *"emulator"* ]]; then
@@ -79,13 +79,13 @@ function build() {
         cmd+="--build-arg EMULATOR_ANDROID_VERSION=${a_v} --build-arg EMULATOR_API_LEVEL=${a_l} "
     fi
 
-    cmd+="-f ${FOLDER_PATH} ."
+    cmd+="-f ./${FOLDER_PATH} ."
     ${cmd}
-    docker tag "${IMAGE_NAME_SPECIFIC_RELEASE}" "${IMAGE_NAME_LATEST}"
+    docker tag ${IMAGE_NAME_SPECIFIC_RELEASE} ${IMAGE_NAME_LATEST}
 
     if [ -n "${a_v}" ] && [ "${a_v}" = "${last_key}" ]; then
         echo "${a_v} is the last version in the list, will use it as default image tag"
-        docker tag "${IMAGE_NAME_SPECIFIC_RELEASE}" "${IMAGE_NAME}:latest"
+        docker tag ${IMAGE_NAME_SPECIFIC_RELEASE} ${IMAGE_NAME}:latest
     fi
 }
 
@@ -97,7 +97,7 @@ function test() {
     mkdir -p tmp
     build
     docker run -it --rm --name test --entrypoint /bin/bash \
-        -v "$PWD/${tmp_folder}":"${cli_path}/${tmp_folder}" "${IMAGE_NAME_SPECIFIC_RELEASE}" \
+        -v $PWD/${tmp_folder}:${cli_path}/${tmp_folder} ${IMAGE_NAME_SPECIFIC_RELEASE} \
         -c "cd ${cli_path} && sudo rm -rf ${tmp_folder}/* && \
     nosetests -v && sudo mv .coverage ${tmp_folder} && \
     sudo cp -r ${results_path}/* ${tmp_folder} && sudo chown -R 1300:1301 ${tmp_folder} &&
